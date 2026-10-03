@@ -1,0 +1,14 @@
+id = "cafe-aoi"
+title = "Café Aoi, morning rush"
+partner_name = "Barista"
+place = "a small café two streets from the friend's office"
+partner_role = "the barista, mid-morning, one regular order behind and a queue at the door"
+register = "casual-polite"
+goal = "Order a drink and something to eat, pay, and leave holding the right things."
+tasks = [
+  { id = "greet",    hint = "answer the greeting without freezing" },
+  { id = "choose",   hint = "name a drink and one food item" },
+  { id = "modify",   hint = "change the order after the barista says one thing is sold out" },
+  { id = "size",     hint = "give the size in Japanese, not English" },
+  { id = "pay",      hint = "pay and react to being handed the wrong item" },
+]

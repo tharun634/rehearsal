@@ -1,0 +1,14 @@
+id = "station-ticket"
+title = "Ticket counter, one-way, no English"
+partner_name = "Clerk"
+place = "a staffed ticket counter at a small station — the machine is out of order"
+partner_role = "the station clerk, polite, impatient with numbers, allergic to English"
+register = "neutral-formal"
+goal = "Buy the right ticket for the right person, then confirm the platform."
+tasks = [
+  { id = "state",   hint = "say where you are going and for how many people" },
+  { id = "price",   hint = "repeat the price the clerk says, exactly" },
+  { id = "child",   hint = "add that one of the party is a child and get the right fare word" },
+  { id = "ask",     hint = "ask which platform, in a question that a clerk would accept" },
+  { id = "confirm", hint = "confirm you are leaving now, not later" },
+]

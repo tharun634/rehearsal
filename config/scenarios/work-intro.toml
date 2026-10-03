@@ -1,0 +1,13 @@
+id = "work-intro"
+title = "Introducing yourself at a friend's new job"
+partner_name = "Colleague"
+place = "the older handover of a friend's new workplace: a colleague you met once, now on a call"
+partner_role = "a colleague one rank above, on the phone, taking notes while you introduce yourself"
+register = "formal"
+goal = "Introduce yourself, your role, and one request, without going the wrong way up or down in politeness."
+tasks = [
+  { id = "name",     hint = "give name and where you are from, at the right register" },
+  { id = "role",     hint = "say what you do in one clause a colleague can write down" },
+  { id = "ask",      hint = "make one request about a deadline" },
+  { id = "close",    hint = "close without bowing out in the middle of the call" },
+]

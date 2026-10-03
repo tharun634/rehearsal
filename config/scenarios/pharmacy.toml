@@ -1,0 +1,13 @@
+id = "pharmacy"
+title = "Pharmacy counter: the thing that must not be misunderstood"
+partner_name = "Clerk"
+place = "a pharmacy counter, late evening, a friend who is used to the chain but not the language"
+partner_role = "the pharmacy clerk, calm, but they cannot see the patient and one wrong word changes the medicine"
+register = "neutral"
+goal = "Ask for the right thing, confirm it, and react to being asked a question you did not expect."
+tasks = [
+  { id = "state",   hint = "say what you need and why, in one sentence" },
+  { id = "clarify", hint = "answer the clerk's unexpected clarification question, do not repeat yourself" },
+  { id = "confirm", hint = "confirm quantity and the thing being handed over" },
+  { id = "pay",     hint = "pay and leave with the right bag" },
+]

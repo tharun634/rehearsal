@@ -1,0 +1,6 @@
+# keep line endings stable across the Windows machine this was built on
+* text=auto
+*.py text=auto
+*.toml text=auto
+*.md text=auto
+*.ps1 text=auto eol=crlf

@@ -1,0 +1,20 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# the friend's data. never committed: turns, cards, timings
+data/
+*.sqlite3
+
+# engines and weights: big, licensed elsewhere, fetched by the scripts in tools/
+models/
+tools/bin/
+tools/*.zip
+tools/*.tmp
+
+# generated hand-over sheets (regenerate with `report`)
+docs/handout.html
+
+# local scratch
+*.log

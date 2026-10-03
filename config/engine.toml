@@ -1,0 +1,21 @@
+# how to reach llama.cpp. three modes, one key: mode.
+#
+#   mode = "server"  llama-server stays resident: fast, ~2.6 GB for Gemma-3-4B Q4_K_M.
+#   mode = "cli"     llama-cli one-shot per call: nothing resident, pays the reload.
+#                    use this when something else already owns the GPU.
+#   mode = "mock"    canned responses, tests only. never a real session.
+
+mode = "server"
+
+# point these at your own build. paths are relative to the repo root.
+llama_server = "tools/bin/llama-server.exe"
+llama_cli = "tools/bin/llama-cli.exe"
+gguf = "models/gemma-3-4b-it-Q4_K_M.gguf"
+
+base_url = "http://127.0.0.1:8082"
+model_name = "local"
+ctx = 4096
+n_predict = 320
+temperature = 0.6
+ngl = 99          # 0 = CPU only, for the day the GPU is busy
+threads = 0
