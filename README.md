@@ -89,11 +89,13 @@ box at different times):
 | condition | speed |
 |---|---|
 | GPU free, ~3 GB+ system RAM free | **101–115 tok/s** generation, 71 tok/s prompt eval |
+| GPU free, RAM free — whole 5-turn session, server mode | **21.9 s** wall, 4784 / 1858 tokens (≈ 85 tok/s including prompt eval and overhead) |
+| GPU free, RAM free — same session, `mode = "cli"` | **40.9 s** wall, 10 calls, tokens 0/0 (cli reports no usage; the reload is ~2× the session) |
 | another model holding the RAM (paging against `C:\pagefile.sys`) | **1.9 tok/s** — a 5-turn session took 829.7 s for 1566 completion tokens |
 | `mode = "cli"`, RAM starved | one `doctor` call = **17.8 s** wall; llama-cli's own line read `[ Prompt: 4.0 t/s | Generation: 0.8 t/s ]` |
 
 The 60× spread is not the model, it is the machine. A 2.49 GB model on a 32 GB box
-with 252 MB free pages, and paging is where the whole difference lives.
+with a few hundred MB free pages, and paging is where the whole difference lives.
 
 ## Why open innovation matters here
 

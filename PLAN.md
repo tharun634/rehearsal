@@ -25,9 +25,12 @@ stdlib only. sqlite for the memory. No framework, no API, no upload path.
   server AND cli mode; measured numbers in `docs/research/2026-10-04-record.md`
   (101–115 tok/s with the GPU while RAM was free, 1.9 tok/s while it was not).
 - [x] **M3 — the friend.** A scripted session played end-to-end against the real
-  model (`docs/transcripts/demo-server-2026-10-04.md`: 5 turns, 12 corrections,
-  4798/1566 tokens), and the coach's error kinds were checked against what the
-  learner actually typed rather than believed.
+  model, twice: the starved-machine run (`docs/transcripts/demo-server-2026-10-04.md`
+  before the retry fix: 5 turns, 12 corrections, 829.7 s, 4798/1566 tokens) and the
+  clean one after it (`docs/transcripts/both-server-2026-10-04.md`: 5 turns, 15
+  corrections, **21.9 s**, 4784/1858 tokens ≈ 85 tok/s wall). Same session in
+  `mode = "cli"` (`docs/transcripts/both-cli-2026-10-04.md`): 5 turns, 9 corrections,
+  **40.9 s**, tokens 0/0 because cli reports no usage.
 - [ ] **M4 — hand-over.** `report` printed and given to the friend; their reply
   quoted in the DEV post.
 - [ ] **M5 — post.** `docs/DEV_POST.md` against the challenge template, with the
@@ -44,20 +47,26 @@ stdlib only. sqlite for the memory. No framework, no API, no upload path.
 
 ## Open questions — answered by measurement
 
-- **Does the coach's `kind` classification survive on a 4B model?** No. In the
-  real cafe run the 12 corrections came back as `grammar`, `vocabulary` and one
-  `word_order` — `particle`, `register` and `pronunciation` never appeared, and
-  the `why` text invented facts (`mado` called "a type of bread", `Sato` called
-  English). The deck uses the *span* the learner typed, not the kind, so the
-  cards still work; the kind labels are cosmetic and the hand-over sheet says
-  "practise this", never "this rule". See DECISIONS.md, "The coach is a nudge,
-  not a teacher".
-- **Does `mode = "cli"` survive a reload per call?** One `doctor` call in cli
-  mode measured **17.8 s wall** on this box (model load + prompt eval + 8 tokens),
-  and llama-cli's own line read `[ Prompt: 4.0 t/s | Generation: 0.8 t/s ]` while
-  RAM was starved. Survivable for a 5-turn session (~10 calls ≈ 3 minutes of
-  overhead) but not competitive with the resident server; cli exists so the
-  session can coexist with another model, not to be fast.
+- **Does the coach's `kind` classification survive on a 4B model?** Partly, and it
+  improved once the retry fix landed. The clean 15-correction run returned
+  `grammar` 8, `vocabulary` 4, `word_order` 1, `particle` 2 — and the earlier run
+  had only `grammar`/`vocabulary`. `register` appeared twice in the other run.
+  `pronunciation` and `comprehension` still never appear from the real model (the
+  mock test emits `pronunciation`, which is how that label got into the counts).
+  What did NOT survive is the content: `said` is still the learner's whole turn,
+  not the shortest span, and the `why` text still invents — it offered the barista
+  "Could you tell me what kind of bread you'd like?" as a nudge and invented the
+  menu words `tonkatsu-men`/`katsudon-men`. The deck uses the *span* the learner
+  typed, not the kind, so the cards still work; the kind labels are cosmetic and
+  the hand-over sheet says "practise this", never "this rule". See DECISIONS.md,
+  "The coach is a nudge, not a teacher".
+- **Does `mode = "cli"` survive a reload per call?** Yes, and with the machine
+  roomy a whole 5-turn cli session costs **40.9 s** (10 calls ≈ 4 s each) against
+  the server's 21.9 s — so the reload is about 2× the session, not a disaster.
+  The starved-machine numbers are the ones that matter: one `doctor` call was
+  **17.8 s wall** and llama-cli's own line read `[ Prompt: 4.0 t/s | Generation:
+  0.8 t/s ]`. cli exists so the session can coexist with another resident model,
+  not to be fast.
 - **Long-vowel pronunciation feedback from a text model is a guess, not audio.**
   Left as a guess and labelled that way in the README; no clip bank yet. This is
   the one open gap worth naming before the post.

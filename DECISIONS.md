@@ -187,3 +187,23 @@ struggled, which is what the deck and the hand-over sheet actually use.
 **Reopens when:** a bigger model or a lookup table (jisho/KanjiGo) backs the
 `fix` field. Until then the sheet says "this is what to practise", never
 "this is the rule".
+
+## 2026-10-04 — `systeminfo` reports MB, not bytes
+
+**Chose:** `ram_mb()` returns the numbers `systeminfo` prints, with no unit
+conversion, and the evidence file says "MB".
+**Because:** the recorder printed "0 MiB total, 0 MiB free" on every real run
+while the same `subprocess.run` worked standalone. The values were being read
+correctly and then shifted `>> 20` as if they were bytes: 32,492 MB became 31
+and 303 MB became 0. A wrong RAM figure in the post would have been worse than
+a slow read, so the fix keeps the read and drops the maths.
+**Reopens when:** someone wants a byte-accurate figure — then read
+`MEMORYSTATISTICS` through a real API, not a text scrape.
+
+## 2026-10-04 — the evidence filename carries the tag
+
+**Chose:** `docs/research/<date>-<tag>-record.md`, not `<date>-record.md`.
+**Because:** a scratch `--engine mock` run at the same date silently overwrote
+the file holding the two real runs. Same-date collisions are the difference
+between evidence and a guess about what ran.
+**Reopens when:** nothing. Keep the tag.

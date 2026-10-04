@@ -9,8 +9,9 @@ This is the demo recorder for the write-up. It does four things in order:
   3. runs `rehearsal practice` exactly as you would type it, streaming the
      console to the screen AND into docs/demos/<name>.txt (the terminal tape
      you embed in the DEV post);
-  4. writes docs/research/<date>-record.md with the commands, the timings,
-     the token counts and the RAM at the moment of the run.
+  4. writes docs/research/<date>-<tag>-record.md with the commands, the timings,
+     the token counts and the RAM at the moment of the run (the tag is in the
+     filename so a scratch run cannot overwrite a real one).
 
 Usage:
   python tools/record_demo.py --scenario cafe-aoi --interactive
@@ -45,8 +46,8 @@ CONFIG_ENGINE = "config/engine.toml"
 # --------------------------------------------------------------------------- #
 # machine facts, stdlib only
 # --------------------------------------------------------------------------- #
-def ram_mib() -> tuple[int, int]:
-    """(total, available) physical memory in MiB, read from `systeminfo`.
+def ram_mb() -> tuple[int, int]:
+    """(total, available) physical memory in MB, read from `systeminfo`.
     Slow (tens of seconds) but stdlib-honest: ctypes.GetSystemInfo is not
     reachable in this Python build (ntdll does not export the name), and a
     wrong RAM figure in the post would be worse than a slow one. Returns
@@ -65,8 +66,10 @@ def ram_mib() -> tuple[int, int]:
                 vals[m.group(1)] = int(m.group(2).replace(",", "").replace(".", ""))
         if vals:
             break
-    return (vals.get("Total Physical Memory", 0) >> 20,
-            vals.get("Available Physical Memory", 0) >> 20)
+    # systeminfo already reports megabytes; shifting them as if they were
+    # bytes is how this read used to print 0.
+    return (vals.get("Total Physical Memory", 0),
+            vals.get("Available Physical Memory", 0))
 
 
 def speed_lines(text: str) -> list[str]:
@@ -112,8 +115,8 @@ def main() -> int:
     ap.add_argument("--both", action="store_true", help="measure server mode AND cli mode")
     ap.add_argument("--engine", default="server", choices=["server", "cli", "mock"])
     ap.add_argument("--tag", default=None, help="name for the evidence files")
-    ap.add_argument("--ram-total", type=int, help="MiB total, if systeminfo is too slow")
-    ap.add_argument("--ram-free", type=int, help="MiB free, from Task Manager")
+    ap.add_argument("--ram-total", type=int, help="MB total, if systeminfo is too slow")
+    ap.add_argument("--ram-free", type=int, help="MB free, from Task Manager")
     a = ap.parse_args()
 
     tag = a.tag or a.scenario
@@ -121,13 +124,13 @@ def main() -> int:
     eng_cfg = load_engine_config(CONFIG_ENGINE)
     port = int(str(eng_cfg["base_url"]).rsplit(":", 1)[-1])
 
-    total, avail = ram_mib()
+    total, avail = ram_mb()
     if a.ram_total:
         total = a.ram_total
     if a.ram_free:
         avail = a.ram_free
     tight = 0 < avail < 4000
-    print(f"machine: {total} MiB total, {avail} MiB free "
+    print(f"machine: {total} MB total, {avail} MB free "
           f"({'TIGHT — close the other model first' if tight else 'roomy'})")
     if total == 0:
         print("note: the RAM read failed; the evidence file will say RAM unknown")
@@ -177,10 +180,10 @@ def main() -> int:
             time.sleep(2)
 
     # ---- the evidence file ---------------------------------------------------- #
-    out = ROOT / "docs" / "research" / f"{stamp}-record.md"
+    out = ROOT / "docs" / "research" / f"{stamp}-{tag}-record.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     lines = [f"# Record — {stamp}", "",
-             f"- RAM at start: {total} MiB total / {avail} MiB free"
+             f"- RAM at start: {total} MB total / {avail} MB free"
              if total else "- RAM at start: read failed (see `systeminfo`)",
              f"- model: {eng_cfg['gguf']}",
              f"- llama-server: {eng_cfg['llama_server'] or '(not fetched)'}",

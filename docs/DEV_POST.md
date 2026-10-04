@@ -25,16 +25,22 @@ machine.
 ## Demo
 
 The session below is real: llama.cpp b11379, Gemma-3-4B-it Q4_K_M, five turns,
-12 corrections, 4798 prompt / 1566 completion tokens, in a café scene.
+15 corrections, 4784 prompt / 1858 completion tokens, **21.9 s** wall
+(`docs/transcripts/both-server-2026-10-04.md`).
 
-> **Barista:** おはようございます！ Welcome, what can I get for you today?
+> **Barista:** Konnichiwa! Welcome to the café. What can I get for you today?
 > **learner:** Konnichiwa, sumisu no ogi, mado.
 >
 > **coach:** they got across
-> - `Konnichiwa, sumisu no ogi, mado.` → `Konnichiwa, sumisu no ogi o onegaishimasu.` (word_order) — the sentence structure is not quite natural for a request in Japanese.
-> **say instead:** Konnichiwa, sumisu no ogi o onegaishimasu.
-> **coach nudge:** Try rephrasing your request with a polite request particle.
+> - `Konnichiwa, sumisu no ogi, mado.` → `You used 'sumisu' instead of 'suki' for 'like'.` (vocabulary) — the learner needs the right word for 'like' here.
+> - `Konnichiwa, sumisu no ogi, mado.` → `The word order is slightly off; it should be 'sumisu no ogi o mado.'` (grammar) — the object marker 'o' is what makes it a request.
+> - `Konnichiwa, sumisu no ogi, mado.` → `It's better to say 'sumisu no ogi o onegaishimasu' for a polite request.` (grammar) — adding 'onegaishimasu' makes it appropriate for a café.
+> **say instead:** Sumisu no ogi o onegaishimasu.
+> **coach nudge:** Could you please tell me what kind of drink you would like?
 > *scene moved on: greet*
+
+Read that second bullet as the point of the whole design: the coach is allowed
+to be wrong, and the learner's own words are what the deck hands back.
 
 **Disclosure, because it matters:** the five learner lines are *scripted*
 (`docs/demos/script-cafe-aoi.txt`), not transcribed speech. I do not have whisper.cpp
@@ -106,12 +112,14 @@ the partner".
 **It costs nothing to run.** Zero API calls. The cost is tokens/second, and I measured
 it instead of quoting a model card.
 
-**Where open lost, honestly.** A 4B model is a bad teacher. In the real run the coach
-called `mado` "a type of bread" and told the learner `Sato` was English instead of
-Japanese. A bigger closed model would have got those two facts right — while sending
-the friend's turns to a server. So the coach is a *nudge*, and the deck uses the span
-the learner typed, not the coach's claim. That trade is written up in
-`docs/research/` and in DECISIONS.md ("The coach is a nudge, not a teacher").
+**Where open lost, honestly.** A 4B model is a bad teacher. In the clean run the coach
+said `sumisu` should be `suki` (it is "smoothie"), invented the menu words `tonkatsu-men`
+and `katsudon-men`, and slipped a question to the barista — "Could you tell me what
+kind of bread you'd like?" — into the coach's own output. A bigger closed model would
+have got those facts right, while sending the friend's turns to a server. So the coach
+is a *nudge*, and the deck hands back the span the learner typed, not the coach's claim.
+That trade is written up in `docs/research/` and in DECISIONS.md ("The coach is a nudge,
+not a teacher").
 
 ## The numbers, both of them
 
@@ -119,8 +127,10 @@ Same model, same box, same day, 60× apart:
 
 | condition | speed |
 |---|---|
-| GPU free, RAM free | **101–115 tok/s** generation, 71 tok/s prompt eval |
-| another model holding the RAM (paging against `C:\pagefile.sys`) | **1.9 tok/s** — 5 turns, 1566 completion tokens, 829.7 s |
+| GPU free, RAM free — llama-server's own counters | **101–115 tok/s** generation, 71 tok/s prompt eval |
+| GPU free, RAM free — whole 5-turn session, server mode | **21.9 s** wall, 4784 / 1858 tokens (≈ 85 tok/s including prompt eval and overhead) |
+| GPU free, RAM free — same session, `mode = "cli"` | **40.9 s** wall, 10 calls, tokens 0/0 (cli reports no usage; the reload is ~2× the session) |
+| another model holding the RAM (paging against `C:\pagefile.sys`) | **1.9 tok/s** — 5 turns, 1566 completion tokens, **829.7 s** |
 | `mode = "cli"`, RAM starved | one `doctor` call = **17.8 s** wall, `[ Prompt: 4.0 t/s | Generation: 0.8 t/s ]` |
 
 The spread is not the model, it is the machine. A 2.49 GB model on a 32 GB box with

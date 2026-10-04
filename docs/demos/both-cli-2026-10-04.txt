@@ -1,0 +1,49 @@
+
+Barista: Ohayo gozaimasu! What can I get for you today?
+  ✓ they got across
+  - sumisu no ogi, mado. → sumisu no ogi, mado.  [word order]
+    The word order is slightly off; it’s more natural to say ‘sumisu no ogi o mado.’
+  say instead: Sumisu no ogi o mado onegaishimasu.
+  (coach nudge, not spoken to the partner: Could you tell me what kind of bread you’d like?)
+
+Barista: Ima, watashi wa omocha o shimasu. Nani o kudasai?
+  · scene: greet
+  ✓ they got across
+  - Katsu-men, please. Ah, one size large. → Katsu-men, one size large, please.  [politeness]
+    The ‘please’ is a polite addition that would improve the flow and sound more natural.
+  - Katsu-men, one size large. → Katsu-men, one size large, onegaishimasu.  [politeness]
+    Adding ‘onegaishimasu’ (please) after the order makes the request more polite.
+  - Katsu-men, one size large. → Katsu-men, one size large, arimasu ka?  [clarification]
+    It’s better to confirm if they have the size large available before ordering.
+  say instead: Katsu-men, one size large, onegaishimasu.
+  (coach nudge, not spoken to the partner: Could you please confirm if they have the large size available before you order?)
+
+Barista: Ima, o-kawa o onegai shimasu. (Now, an iced coffee please.)
+  · scene: choose
+  ✓ they got across
+  - Sato, mado. → Sato, mado.  [vocabulary]
+    The phrase ‘Sato, mado’ is a correct way to say ‘Coffee, please’ but it’s not a common or natural way to order coffee in Japanese; it’s more like stating what you want.
+  say instead: Sato o onegai shimasu.
+  (coach nudge, not spoken to the partner: Could you try ordering the coffee with a more typical phrase?)
+
+Barista: Sumimasen, katsu-men wa oshimai desu ka?
+  ✓ they got across
+  - big size? → large  [vocabulary]
+    Using 'big size' is not a standard way to specify size in Japanese; 'large' is more common and natural.
+  - Or "large" →   [grammar]
+    This part was fine, but the previous phrase needed correction.
+  say instead: Katsu-men wa, mii sai desu ka?
+  (coach nudge, not spoken to the partner: Try saying 'Mii sai desu ka?' to confirm the size.)
+
+Barista: Chotto, o-kawa wa demo, katsu-men ga setto desu. Large, desu ka?
+  · scene: size
+  ✓ they got across
+  - Arigatsumikabushi! → Arigato!  [vocabulary]
+    ‘Arigatsumikabushi’ is a very polite and slightly overly formal way to say ‘thank you’ and isn’t necessary here.
+  - Arigatsumikabushi! → Arigato!  [grammar]
+    The phrase is grammatically correct, but sounds overly formal for this casual setting.
+  say instead: Arigato!
+  (coach nudge, not spoken to the partner: Could you try saying ‘Arigato!’ and then ask if you can have the katsu-men again?)
+
+session: 5 turns, 9 corrections, scene not cleared in 40.9s · tokens 0/0
+transcript: docs/transcripts/both-cli-2026-10-04.md
