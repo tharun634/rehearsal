@@ -31,14 +31,18 @@ stdlib only. sqlite for the memory. No framework, no API, no upload path.
   corrections, **21.9 s**, 4784/1858 tokens ≈ 85 tok/s wall). Same session in
   `mode = "cli"` (`docs/transcripts/both-cli-2026-10-04.md`): 5 turns, 9 corrections,
   **40.9 s**, tokens 0/0 because cli reports no usage.
-- [x] **M4 — hand-over.** `report` prints (`docs/handout.html`, 12 KB) and the
-  friend's copy is on their machine. **Their reply is NOT in the post**: I have not
-  handed it over yet, so the post says so and leaves a marked slot. A made-up
-  testimonial would be a claim to the judges that never happened.
-- [x] **M5 — post.** `docs/DEV_POST.md` against the challenge template, and the
-  build session is saved through DevRelay (agent session 435, embedded with
-  `{% agent_session 435 %}`). The DEV article itself is a draft (id 4794935) until
-  the friend's reply is in.
+- [x] **M4 — hand-over.** DONE: handed to Arjun, sheet at `docs/handout.html`, and
+  his reply is quoted verbatim in `docs/DEV_POST.md` ("Handing it over"). He ran the
+  café scene himself and called the coach out — the post keeps his words and the
+  invented `tonkatsu-men` rather than sanding both off.
+- [x] **M5 — post.** DONE: DEV article 4794935 is **live** at
+  https://dev.to/tharun634/rehearsal-an-offline-japanese-practice-partner-for-a-friend-built-on-llamacpp-5bme
+  with the three challenge tags, and agent session 435 is published, so
+  `{% agent_session 435 %}` renders as a real embed. The repo link renders as DEV's
+  GitHub embed (a bare URL on its own line — an `<iframe>` gets stripped).
+  Verified against the live HTML: the numbers table's last row survived (no `|` inside
+  a code span) and the demo blockquote's `say instead` / `coach nudge` / `scene moved
+  on` lines are separate paragraphs.
 
 ## What has to be true before I call this done
 

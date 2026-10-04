@@ -207,3 +207,17 @@ a slow read, so the fix keeps the read and drops the maths.
 the file holding the two real runs. Same-date collisions are the difference
 between evidence and a guess about what ran.
 **Reopens when:** nothing. Keep the tag.
+
+## 2026-10-04 — DEV's renderer, not my markdown
+
+**Chose:** write the post the way DEV renders it, and check the live HTML instead
+of trusting the source.
+**Because:** three things were wrong on the live page and right in the file:
+an `<iframe src="https://gh-scm-snapshot.dev.to/gh-embed-…">` for the repo was
+**stripped** (a bare URL on its own line is what DEV turns into a GitHub embed);
+the last row of the numbers table was cut off at `17.8 s wall, [ Prompt: 4.0 t/s`
+because a `|` inside a code span split the cell; and the demo blockquote merged
+`**say instead:**`, `**coach nudge:**` and `*scene moved on:*` into the last bullet
+until each was separated by a blank `>` line.
+**Reopens when:** anything else on the page looks like it was written by the model.
+DEV also renders `title` as the single `<h1>`, so the body must not repeat it.
