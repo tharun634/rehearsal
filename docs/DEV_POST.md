@@ -67,8 +67,11 @@ The session below is real: llama.cpp b11379, Gemma-3-4B-it Q4_K_M, five turns,
 > - `Konnichiwa, sumisu no ogi, mado.` → `You used 'sumisu' instead of 'suki' for 'like'.` (vocabulary) — the learner needs the right word for 'like' here.
 > - `Konnichiwa, sumisu no ogi, mado.` → `The word order is slightly off; it should be 'sumisu no ogi o mado.'` (grammar) — the object marker 'o' is what makes it a request.
 > - `Konnichiwa, sumisu no ogi, mado.` → `It's better to say 'sumisu no ogi o onegaishimasu' for a polite request.` (grammar) — adding 'onegaishimasu' makes it appropriate for a café.
+>
 > **say instead:** Sumisu no ogi o onegaishimasu.
+>
 > **coach nudge:** Could you please tell me what kind of drink you would like?
+>
 > *scene moved on: greet*
 
 Read that second bullet as the point of the whole design: the coach is allowed
@@ -82,10 +85,9 @@ lines are mine, written to carry the kind of errors this friend actually makes.
 
 ## Code
 
-<iframe src="https://gh-scm-snapshot.dev.to/gh-embed-tharun634-rehearsal"></iframe>
+https://github.com/tharun634/rehearsal
 
-[github.com/tharun634/rehearsal](https://github.com/tharun634/rehearsal) — MIT, 33
-tracked files, no pip install needed for the core.
+MIT, 33 tracked files, no pip install needed for the core.
 
 ## How I Built It
 
@@ -163,7 +165,7 @@ Same model, same box, same day, 60× apart:
 | GPU free, RAM free — whole 5-turn session, server mode | **21.9 s** wall, 4784 / 1858 tokens (≈ 85 tok/s including prompt eval and overhead) |
 | GPU free, RAM free — same session, `mode = "cli"` | **40.9 s** wall, 10 calls, tokens 0/0 (cli reports no usage; the reload is ~2× the session) |
 | another model holding the RAM (paging against `C:\pagefile.sys`) | **1.9 tok/s** — 5 turns, 1566 completion tokens, **829.7 s** |
-| `mode = "cli"`, RAM starved | one `doctor` call = **17.8 s** wall, `[ Prompt: 4.0 t/s | Generation: 0.8 t/s ]` |
+| `mode = "cli"`, RAM starved | one `doctor` call = **17.8 s** wall, llama.cpp's own counters read `Prompt: 4.0 t/s` and `Generation: 0.8 t/s` |
 
 The spread is not the model, it is the machine. A 2.49 GB model on a 32 GB box with
 252 MB free pages, and paging is where the whole difference lives. Anyone who quotes
