@@ -95,8 +95,10 @@ def transcript_md(out: str, scenario: dict, result: dict, meta: dict) -> str:
         if c.get("nudge"):
             lines.append(f"**coach nudge:** {c['nudge']}")
         if turn.get("tasks_done"):
-            lines.append(f"*scene moved on: {', '.join(turn['tasks_done'])}* — "
-                         f"level {c.get('level','?')}/5")
+            moved = f"*scene moved on: {', '.join(turn['tasks_done'])}*"
+            if isinstance(c.get("level"), int):
+                moved += f" — level {c['level']}/5"
+            lines.append(moved)
         lines.append("")
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w", encoding="utf-8") as fh:

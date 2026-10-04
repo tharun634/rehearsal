@@ -64,6 +64,37 @@ Set `mode` in `config/engine.toml` first:
   something else on the machine already owns the GPU; you pay the reload instead of the RAM.
 - `mode = "mock"` — canned, tests only.
 
+## Recording a demo (and its numbers)
+
+```
+python tools/record_demo.py --scenario cafe-aoi --turns 5 \
+       --script docs/demos/script-cafe-aoi.txt --engine server --tag demo
+```
+
+One command: it reads the machine's free RAM, starts `llama-server` as a **child**
+process, streams the session to the screen AND a tape in `docs/demos/`, writes the
+transcript to `docs/transcripts/`, stops the server, and drops the measurements into
+`docs/research/<date>-record.md`. `--both` measures server mode and cli mode back to
+back; `--interactive` types your own lines instead of a script.
+
+If a run is killed mid-session, the model is still resident. Stop it:
+
+```
+python tools/stop_llama.py
+```
+
+Measured on this machine (see `docs/research/`, both numbers are true of the same
+box at different times):
+
+| condition | speed |
+|---|---|
+| GPU free, ~3 GB+ system RAM free | **101–115 tok/s** generation, 71 tok/s prompt eval |
+| another model holding the RAM (paging against `C:\pagefile.sys`) | **1.9 tok/s** — a 5-turn session took 829.7 s for 1566 completion tokens |
+| `mode = "cli"`, RAM starved | one `doctor` call = **17.8 s** wall; llama-cli's own line read `[ Prompt: 4.0 t/s | Generation: 0.8 t/s ]` |
+
+The 60× spread is not the model, it is the machine. A 2.49 GB model on a 32 GB box
+with 252 MB free pages, and paging is where the whole difference lives.
+
 ## Why open innovation matters here
 
 | claim | what makes it possible |
