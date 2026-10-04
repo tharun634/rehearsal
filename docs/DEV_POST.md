@@ -139,7 +139,11 @@ one of those numbers without the other is describing a different machine.
 
 ## My Agent Session
 
-<!-- embed with the agent_session tag once DevRelay has uploaded it -->
+{% agent_session 435 %}
+
+The full build session is on DEV as an agent session — [id 435, `rehearsal-building-an-offline-japanese-practice-partner-on-llamacpp-pi-session-pdidth`](https://dev.to/agent_sessions/rehearsal-building-an-offline-japanese-practice-partner-on-llamacpp-pi-session-pdidth), 292 messages, recorded by Pi running the same open model this project runs against. It is the honest version of "how I built it": it contains the failed probes, the two engine modes, the RAM discovery, and the moment the coach's JSON stopped being a coin flip.
+
+The transcript is scrubbed before upload: absolute paths, the username, and one `ls` of my home directory are replaced with `<local-path>`/`<user>`, and the tool refuses to write the file if anything shaped like a token survives (`tools/devrelay_session.py`). The scrub counts are printed by the tool — 638 drive paths, 291 usernames, 128 home-directory words, 0 secrets.
 
 ## Prize Categories
 
