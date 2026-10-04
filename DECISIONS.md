@@ -121,3 +121,69 @@ deck → report — and must not need 2.6 GB of weights or a GPU to do it.
 that recorded everything, and that is the whole bug surface here.
 **Reopens when:** M3 adds a transcript fixture from the *real* model, so the mock
 never becomes the only witness.
+
+## 2026-10-04 — One retry at temp 0, then skip the turn
+
+**Chose:** `session._call` asks the model twice, cold the second time, and if
+that also fails the turn is saved without a grade instead of ending the run.
+**Because:** measured on the real model — the coach call on turn 2 of the cafe
+scene emitted 320 tokens of prose and `parse_json_loose` raised
+`ENGINE: model did not return JSON`. A 4B model does not respect the shape
+every time, and a session that dies on turn 2 records less than a session that
+limps to turn 5.
+**Rejected:** raising on the first failure — the demo recorder would have
+written a tape with one turn in it and the post would have looked like a demo
+of a working tool.
+
+## 2026-10-04 — Coach budget 320 → 512 tokens
+
+**Chose:** `max_tokens = 512` for the coach call, 160 for the partner.
+**Because:** the coach payload is three errors plus `better` plus `nudge`, and
+in Japanese with romaji glosses that overflows 320. The failing call above hit
+the cap exactly (`n_gen = 320` in the server log).
+**Rejected:** truncating the JSON — a half payload is what `parse_json_loose`
+would then reject anyway, and the failure would look like a parse bug instead
+of a budget bug.
+
+## 2026-10-04 — Dedupe coach errors by the said-span
+
+**Chose:** a `seen_spans` set in `practice` keyed on `said.strip().lower()`.
+**Because:** the real run returned the same correction twice in one report
+("`Arigatsumikabushi!` → Thank you very much!" and "`Arigatsumikabushi!` →
+Thank you!"), and every one of those becomes a card in the deck. The SRS would
+have shown the same card twice in one review.
+
+## 2026-10-04 — RAM read from `systeminfo`, not ctypes
+
+**Chose:** `record_demo.ram_mib()` shells out to `systeminfo` and parses the two
+labelled lines; `--ram-total/--ram-free` override it.
+**Because:** `ctypes` in this Python 3.13 build has no `windos…` handle
+(`dir(ctypes)` → only `windll`), and `windll.ntdll.GetSystemInfo` raises
+`function 'GetSystemInfo' not found`. A slow read that is right beats a fast
+read that is missing, and the RAM number is the one number the whole speed
+claim depends on.
+
+## 2026-10-04 — Two speeds, one machine, both true
+
+**Chose:** the evidence file prints the RAM at the moment of the run and says
+what it does not prove.
+**Because:** the same model on the same box measured **101–115 tok/s** with the
+GPU while memory was free, and **1.9 tok/s** (829.7 s for a 5-turn session,
+1566 completion tokens) while the Strata server was holding the RAM and llama
+was paging against `C:\pagefile.sys`. Quoting either number alone would be a
+lie about the machine.
+**Rejected:** a clean-machine-only benchmark — the friend's machine is this
+machine, and the honest claim is a range with the cause named.
+
+## 2026-10-04 — The coach is a nudge, not a teacher
+
+**Chose:** the coach's `why` is shown as a nudge and the cards are labelled as
+the learner's own weak spots, not as corrections to study.
+**Because:** the real run invented Japanese facts — it called `mado` "a type of
+bread" and told the learner `'Sato'` was English instead of Japanese. A 4B
+model is confident and wrong about the very thing it is supposed to be an
+authority on. The one thing it gets right every time is *where* the learner
+struggled, which is what the deck and the hand-over sheet actually use.
+**Reopens when:** a bigger model or a lookup table (jisho/KanjiGo) backs the
+`fix` field. Until then the sheet says "this is what to practise", never
+"this is the rule".
