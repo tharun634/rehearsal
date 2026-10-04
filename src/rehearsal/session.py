@@ -15,12 +15,37 @@ from .memory import connect, record_turn, record_session, watchlist
 from .prompts import partner_system, coach_system, coach_user
 
 
+def _call(engine, system, user, schema, temp, n, echo):
+    """One model call, one retry at temp 0.
+
+    A 4B model occasionally ignores the shape on a long turn (measured: the
+    coach call on turn 2 of the cafe scene, 320 tokens, prose). Asking again
+    cold is cheaper than losing the turn; a second failure ends the session
+    with whatever was already recorded, because half a session is still
+    evidence and a crash is not.
+    """
+    try:
+        return parse_json_loose(engine.complete(system, user, schema=schema,
+                                                temperature=temp, max_tokens=n), schema)
+    except EngineError as first:
+        if echo:
+            print(f"  engine: {first}")
+        try:
+            return parse_json_loose(engine.complete(system, user, schema=schema,
+                                                    temperature=0.0, max_tokens=n), schema)
+        except EngineError as second:
+            if echo:
+                print(f"  engine: {second}")
+            return None
+
+
 def practice(engine, learner: dict, scenario: dict, con, *,
              max_turns: int = 12, echo: bool = True,
              script: list[str] | None = None) -> dict:
     sys_partner = partner_system(scenario, learner, watchlist(con))
     sys_coach = coach_system(learner, watchlist(con))
     transcript: list[tuple[str, str]] = []
+    log: list[dict] = []
     done: set[str] = set()
     goal_met = False
     corrections = 0
@@ -30,18 +55,18 @@ def practice(engine, learner: dict, scenario: dict, con, *,
     for i in range(max_turns):
         # ---- partner speaks ------------------------------------------ #
         pu = _partner_user(scenario, transcript, done)
-        praw = engine.complete(sys_partner, pu, schema=PARTNER_SCHEMA,
-                               temperature=0.8, max_tokens=160)
-        p = parse_json_loose(praw, PARTNER_SCHEMA)
+        p = _call(engine, sys_partner, pu, PARTNER_SCHEMA, 0.8, 160, echo)
+        if p is None:
+            break
         line = p.get("line", "").strip()
         if not line:
             break
         transcript.append(("Partner", line))
+        newly = [t for t in p.get("tasks_done", []) if t not in done]
+        done.update(newly)
         if echo:
             print(f"\n{scenario['partner_name']}: {line}")
-            newly = [t for t in p.get("tasks_done", []) if t not in done]
-            done.update(newly)
-            if newly and echo:
+            if newly:
                 print(f"  · scene: {', '.join(newly)}")
         if p.get("goal_met"):
             goal_met = True
@@ -59,20 +84,33 @@ def practice(engine, learner: dict, scenario: dict, con, *,
         transcript.append(("You", mine))
 
         # ---- coach reports ------------------------------------------- #
-        craw = engine.complete(sys_coach, coach_user(scenario, transcript, mine),
-                               schema=COACH_SCHEMA, temperature=0.2, max_tokens=320)
-        report = parse_json_loose(craw, COACH_SCHEMA)
+        report = _call(engine, sys_coach, coach_user(scenario, transcript, mine),
+                       COACH_SCHEMA, 0.2, 512, echo)
+        if report is None:
+            # the learner's line still belongs in memory; the coach's notes do not exist
+            report = {"understood": False, "errors": [], "better": "", "nudge": ""}
+            if echo:
+                print("  (coach call failed — the line is saved, nothing was graded)")
         report["errors"] = [e for e in report.get("errors", []) if e.get("said")]
+        # the 4B model re-states the same correction twice sometimes; the deck
+        # would carry the duplicate into sqlite and the SRS would show it twice
+        seen_spans: set[str] = set()
+        report["errors"] = [e for e in report["errors"]
+                            if not seen_spans.add(e["said"].strip().lower())]
         corrections += len(report["errors"])
         record_turn(con, scenario["id"], mine, line, report)
+        log.append({"partner": line, "you": mine, "coach": report,
+                    "tasks_done": newly})
         turns += 1
         if echo:
             _print_report(report)
 
     secs = time.time() - t0
-    record_session(con, scenario["id"], turns, corrections, goal_met, secs, 0)
+    pt, ct = engine.tokens()
+    record_session(con, scenario["id"], turns, corrections, goal_met, secs, ct)
     return {"turns": turns, "corrections": corrections, "goal_met": goal_met,
-            "seconds": round(secs, 1), "tasks_done": sorted(done)}
+            "seconds": round(secs, 1), "tasks_done": sorted(done),
+            "tokens": [pt, ct], "transcript": transcript, "log": log}
 
 
 def _partner_user(scenario: dict, transcript: list[tuple[str, str]],

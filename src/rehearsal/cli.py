@@ -20,7 +20,7 @@ from .memory import connect, stats
 from .prompts import load_learner, load_scenarios
 from .session import practice
 from .srs import review
-from .report import report
+from .report import report, transcript_md
 
 CONFIG_ENGINE = "config/engine.toml"
 CONFIG_LEARNER = "config/learner.toml"
@@ -60,7 +60,8 @@ def cmd_doctor(engine_mode: str | None) -> int:
     return 0
 
 
-def cmd_practice(scenario_id: str, turns: int, engine_mode: str | None) -> int:
+def cmd_practice(scenario_id: str, turns: int, engine_mode: str | None,
+                 script_path: str | None, transcript_out: str | None) -> int:
     learner = load_learner(CONFIG_LEARNER)
     scenarios = load_scenarios()
     if scenario_id not in scenarios:
@@ -69,16 +70,26 @@ def cmd_practice(scenario_id: str, turns: int, engine_mode: str | None) -> int:
     cfg = load_engine_config(CONFIG_ENGINE)
     if engine_mode:
         cfg["mode"] = engine_mode
+    script = None
+    if script_path:
+        # one learner line per line of the file; blank lines end the script.
+        # Used for the recorded demo and for tests, never silently by itself.
+        with open(script_path, encoding="utf-8") as fh:
+            script = [ln.rstrip("\n") for ln in fh if ln.strip()]
     con = connect()
+    eng = Engine(cfg)
     try:
-        result = practice(Engine(cfg), learner, scenarios[scenario_id], con,
-                          max_turns=turns)
+        result = practice(eng, learner, scenarios[scenario_id], con,
+                          max_turns=turns, script=script)
     except EngineError as exc:
         print(f"ENGINE: {exc}")
         return 1
     print(f"\nsession: {result['turns']} turns, {result['corrections']} corrections, "
           f"scene {'cleared' if result['goal_met'] else 'not cleared'} "
-          f"in {result['seconds']}s")
+          f"in {result['seconds']}s · tokens {result['tokens'][0]}/{result['tokens'][1]}")
+    if transcript_out:
+        meta = {"mode": cfg["mode"], "model": cfg["gguf"]}
+        print(f"transcript: {transcript_md(transcript_out, scenarios[scenario_id], result, meta)}")
     return 0
 
 
@@ -134,6 +145,8 @@ def main(argv: list[str]) -> int:
     pr.add_argument("--scenario", required=True)
     pr.add_argument("--turns", type=int, default=12)
     pr.add_argument("--engine")
+    pr.add_argument("--script")
+    pr.add_argument("--transcript")
     rv = sub.add_parser("review")
     rv.add_argument("--n", type=int, default=10)
     rp = sub.add_parser("report")
@@ -152,7 +165,8 @@ def main(argv: list[str]) -> int:
     if args.verb == "stats":
         return cmd_stats()
     if args.verb == "practice":
-        return cmd_practice(args.scenario, args.turns, args.engine)
+        return cmd_practice(args.scenario, args.turns, args.engine,
+                            args.script, args.transcript)
     if args.verb == "review":
         return cmd_review(args.n, None)
     if args.verb == "report":

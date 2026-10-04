@@ -12,8 +12,12 @@ model, so we pay the reload instead of the RAM.
 from __future__ import annotations
 
 import json
+import os
+import re
 import subprocess
 import sys
+import tempfile
+import time
 import tomllib
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -46,19 +50,33 @@ class Engine:
     def __init__(self, cfg: dict):
         self.cfg = cfg
         self.mode = cfg["mode"]
+        # Every model call is timed and counted here: the post can only quote
+        # numbers this object actually produced (docs/research/).
+        self.usage_log: list[dict] = []
 
     # ---- public -------------------------------------------------------- #
     def complete(self, system: str, user: str, *, schema: dict | None = None,
                  temperature: float | None = None, max_tokens: int | None = None) -> str:
         temp = temperature if temperature is not None else self.cfg["temperature"]
         n = max_tokens if max_tokens is not None else self.cfg["n_predict"]
+        t0 = time.time()
         if self.mode == "server":
-            return _server(self.cfg, system, user, schema, temp, n)
-        if self.mode == "cli":
-            return _cli(self.cfg, system, user, schema, temp, n)
-        if self.mode == "mock":
-            return _mock(system, user, schema)
-        raise EngineError(f"unknown engine mode {self.mode!r} in config/engine.toml")
+            text, usage = _server(self.cfg, system, user, schema, temp, n)
+        elif self.mode == "cli":
+            text, usage = _cli(self.cfg, system, user, schema, temp, n)
+        elif self.mode == "mock":
+            text, usage = _mock(system, user, schema), {}
+        else:
+            raise EngineError(f"unknown engine mode {self.mode!r} in config/engine.toml")
+        self.usage_log.append({"mode": self.mode, "seconds": round(time.time() - t0, 2),
+                               **usage})
+        return text
+
+    def tokens(self) -> tuple[int, int]:
+        """(prompt, completion) over every call this Engine made; cli mode cannot
+        count tokens, so it reports 0 and the timings carry the evidence instead."""
+        return (sum(c.get("prompt_tokens") or 0 for c in self.usage_log),
+                sum(c.get("completion_tokens") or 0 for c in self.usage_log))
 
 
 def _render_turns(turns: list[tuple[str, str]]) -> str:
@@ -72,7 +90,7 @@ def _render_turns(turns: list[tuple[str, str]]) -> str:
 # --------------------------------------------------------------------------- #
 # server mode
 # --------------------------------------------------------------------------- #
-def _server(cfg: dict, system: str, user: str, schema: dict | None, temp: float, n: int) -> str:
+def _server(cfg: dict, system: str, user: str, schema: dict | None, temp: float, n: int) -> tuple[str, dict]:
     body = {
         "model": cfg["model_name"],
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
@@ -100,52 +118,101 @@ def _server(cfg: dict, system: str, user: str, schema: dict | None, temp: float,
     except json.JSONDecodeError as exc:
         raise EngineError(f"llama-server returned a non-JSON body: {data!r}") from exc
     try:
-        return data["choices"][0]["message"]["content"]
+        content = data["choices"][0]["message"]["content"]
+        usage = data.get("usage") or {}
     except (KeyError, IndexError, TypeError) as exc:
         raise EngineError(f"unexpected chat-completion shape: {data!r}") from exc
+    return content, {"prompt_tokens": usage.get("prompt_tokens"),
+                     "completion_tokens": usage.get("completion_tokens")}
 
 
 # --------------------------------------------------------------------------- #
 # cli mode — one model load per call, nothing resident
 # --------------------------------------------------------------------------- #
-def _cli(cfg: dict, system: str, user: str, schema: dict | None, temp: float, n: int) -> str:
-    exe = cfg.get("llama_cli") or cfg.get("llama_server", "").replace("server", "cli")
+def _cli_schema_hint(schema: dict) -> str:
+    """cli mode cannot compile a GBNF grammar (see _cli), so the schema becomes a
+    shape the model fills in. A skeleton reads as "answer in this shape"; the raw
+    JSON Schema reads as "repeat this text", which is what Gemma did."""
+    def sample(node: dict) -> str:
+        t = node.get("type", "string")
+        if t == "object":
+            inner = node.get("properties", {})
+            keys = node.get("required") or list(inner)
+            return "{" + ", ".join(
+                f'"{k}": {sample(inner[k])}' for k in keys if k in inner) + "}"
+        if t == "array":
+            return "[" + sample(node.get("items", {"type": "string"})) + "]"
+        return {"boolean": "true", "integer": "1", "number": "1.0"}.get(t, '"text"')
+    props = schema.get("properties", {})
+    keys = schema.get("required") or list(props)
+    body = ", ".join(f'"{k}": {sample(props[k])}' for k in keys if k in props)
+    return "{" + body + "}"
+
+
+def _cli(cfg: dict, system: str, user: str, schema: dict | None, temp: float, n: int) -> tuple[str, dict]:
+    exe = cfg.get("llama_cli")
     if not exe:
         raise EngineError("cli mode needs llama_cli = \"...\" in config/engine.toml")
-    prompt = user
-    if schema:
-        prompt += (
-            "\n\nRespond with a single JSON object and nothing else. It must match exactly:\n"
-            + json.dumps(schema, ensure_ascii=False)
-        )
-    argv = [exe, "-m", cfg["gguf"], "-p", prompt, "--sys", system,
+    argv = [exe, "-m", cfg["gguf"], "-sys", system, "-p", user,
             "-n", str(n), "--temp", str(temp), "-ngl", str(cfg["ngl"]),
-            "-c", str(cfg["ctx"]), "--no-echo", "--std"]
+            "-c", str(cfg["ctx"]), "--single-turn", "--no-display-prompt",
+            "--no-log-prefix", "--color", "off"]
     if cfg["threads"]:
         argv += ["-t", str(cfg["threads"])]
+    prompt = user
+    if schema:
+        # cli mode CANNOT use llama.cpp's grammar sampler with Gemma: -j dies with
+        # "Failed to initialize samplers: Unexpected empty grammar stack after
+        # accepting piece: <start_of_turn>" on build b11379 (see DECISIONS.md).
+        # So the shape is in the prompt here, and parse_json_loose is the net.
+        prompt += (
+            "\n\nReply with exactly one JSON object and no prose, no code fences, "
+            "in this shape (your own values, not these placeholders): "
+            + _cli_schema_hint(schema)
+        )
+        argv[argv.index(user) if user in argv else 5] = prompt
+    # -o holds the echoed prompt plus the completion, and nothing else: no ASCII
+    # banner, no loader chatter. The scratch file is a local copy of the friend's
+    # turn and is unlinked below.
+    fd, out_path = tempfile.mkstemp(prefix="rehearsal-cli-", suffix=".txt")
+    os.close(fd)
+    argv += ["-o", out_path]
     try:
         out = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8",
                              errors="replace", timeout=ENGINE_TIMEOUT_S * 2)
+        try:
+            raw = open(out_path, encoding="utf-8", errors="replace").read()
+        except OSError:
+            raw = ""
     except FileNotFoundError:
         raise EngineError(f"llama-cli not found at {exe!r}. Fix llama_cli in config/engine.toml.")
     except subprocess.TimeoutExpired:
-        raise EngineError("llama-cli timed out; try a smaller -ngl or a smaller model.")
+        raise EngineError("llama-cli timed out; try a smaller -ngl, a smaller model, or server mode.")
+    finally:
+        try:
+            os.unlink(out_path)
+        except OSError:
+            pass
     if out.returncode != 0:
         raise EngineError(f"llama-cli exit {out.returncode}: {out.stderr[-400:]!r}")
-    return _clean_cli_stdout(out.stdout)
-
-
-def _clean_cli_stdout(raw: str) -> str:
-    """llama-cli mixes loader chatter into stdout; keep the completion only."""
-    keep = []
-    for line in raw.splitlines():
-        s = line.strip()
-        if s.startswith(("llama_", "load_", "main:", "init_", "print_", "slot ", "Llama p",
-                         "n_ctx", "GGUF", "get_", "set_", "ctx ", "encode_", "decode_")):
-            continue
-        keep.append(line)
-    text = "\n".join(keep).strip()
-    return text
+    # llama-cli echoes the prompt into the output file; cut at the last copy of it
+    # so the completion alone reaches the parser.
+    i = raw.rfind(prompt)
+    text = raw[i + len(prompt):] if i >= 0 else raw
+    text = text.strip()
+    if text.lower().startswith("assistant:"):
+        text = text[len("assistant:"):].strip()
+    if not text:
+        raise EngineError("llama-cli wrote nothing after the prompt; "
+                          f"stderr tail: {out.stderr[-300:]!r}")
+    # llama-cli prints its own speed line; that is the only token evidence cli
+    # mode gives, so it goes in the usage log rather than being thrown away.
+    m = re.search(r"Prompt: ([\d.]+) t/s \| Generation: ([\d.]+) t/s",
+                  out.stdout + out.stderr)
+    usage = {"prompt_tps": float(m.group(1)) if m else None,
+             "gen_tps": float(m.group(2)) if m else None,
+             "n_predict": n}
+    return text, usage
 
 
 # --------------------------------------------------------------------------- #
@@ -251,5 +318,6 @@ def parse_json_loose(text: str, schema: dict) -> dict:
             pass
     raise EngineError(
         "model did not return JSON. In server mode this means response_format was "
-        "ignored — check the llama.cpp version, or run `rehearsal doctor`."
+        "ignored — check the llama.cpp version, or run `rehearsal doctor`. "
+        f"raw[:240] = {text[:240]!r}"
     )

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import html
 from datetime import datetime
+from pathlib import Path
 
 from .memory import connect, stats, watchlist
 from .prompts import load_scenarios
@@ -63,4 +64,41 @@ def report(out: str, learner: dict) -> str:
     doc = build_html(learner)
     with open(out, "w", encoding="utf-8") as fh:
         fh.write(doc)
+    return out
+
+
+def transcript_md(out: str, scenario: dict, result: dict, meta: dict) -> str:
+    """A session as markdown: what the partner said, what the learner said, what
+    the coach noticed. Written for the write-up, not for the loop: the partner
+    never sees this, only the learner and the reader do."""
+    lines = [f"# {scenario['title']} — session transcript", ""]
+    lines.append(
+        f"| scene | engine | model | turns | corrections | scene cleared | wall clock | tokens (prompt/completion) |\n"
+        f"|---|---|---|---|---|---|---|---|\n"
+        f"| `{scenario['id']}` | {meta.get('mode','?')} | {meta.get('model','?')} | "
+        f"{result['turns']} | {result['corrections']} | "
+        f"{'yes' if result['goal_met'] else 'no'} | {result['seconds']} s | "
+        f"{result['tokens'][0]} / {result['tokens'][1]} |"
+    )
+    lines.append("")
+    for i, turn in enumerate(result["log"], 1):
+        c = turn["coach"]
+        lines.append(f"## Turn {i}")
+        lines.append(f"**{scenario['partner_name']}:** {turn['partner']}")
+        lines.append(f"**learner:** {turn['you']}")
+        lines.append("")
+        lines.append(f"**coach:** {'they got across' if c.get('understood') else 'they did not get across'}")
+        for e in c.get("errors", []):
+            lines.append(f"- `{e['said']}` → `{e['fix']}` ({e.get('kind','?')}) — {e.get('why','')}")
+        if c.get("better"):
+            lines.append(f"**say instead:** {c['better']}")
+        if c.get("nudge"):
+            lines.append(f"**coach nudge:** {c['nudge']}")
+        if turn.get("tasks_done"):
+            lines.append(f"*scene moved on: {', '.join(turn['tasks_done'])}* — "
+                         f"level {c.get('level','?')}/5")
+        lines.append("")
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))
     return out

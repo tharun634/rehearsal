@@ -79,6 +79,8 @@ Their first language is {learner['l1']}.
 Report on the learner's LAST turn only. Be the patient kind of coach:
 - If they got the meaning across, say so in one line before anything else.
 - At most 3 errors, the ones that change whether the scene succeeds. Ignore typos.
+- `said` is the shortest span of the learner's turn that shows the error — copy the
+  words they typed, never the whole turn, never a correction.
 - Explain each in one sentence, in {learner['l1']}, naming the pattern, not the sentence.
 - "better" is one line they could have said, at their level, not native-perfect.
 - "nudge" is what the partner should do next if the learner's turn was unclear.

@@ -1,0 +1,55 @@
+
+Barista: おはようございます！ Welcome, what can I get for you today?
+  · scene: greet
+  ✓ they got across
+  - Konnichiwa, sumisu no ogi, mado. → You correctly used the greeting and requested a coffee, but the word order is slightly off.  [word_order]
+    The sentence structure is not quite natural for a request in Japanese.
+  say instead: Konnichiwa, sumisu no ogi o onegaishimasu.
+  (coach nudge, not spoken to the partner: Try rephrasing your request with a polite request particle.)
+
+Barista: Kore wa oishii desu ka? (This is delicious?)  I have a melon soda and a melon pan, please.
+  · scene: choose
+  ✓ they got across
+  - Katsu-men, please. Ah, one size large. → You should specify the type of katsu-men you want, like 'tonkatsu-men' (pork cutlet ramen).  [vocabulary]
+    The learner didn't specify the type of katsu-men, which is a common request.
+  - Ah, one size large. → It's better to say 'one size large, onegaishimasu' (one size large, please).  [grammar]
+    Adding 'onegaishimasu' makes the request more polite and natural.
+  - Ah, one size large. → You could also say 'one size large, onegaishimasu' (one size large, please).'  [grammar]
+    (seen) Repeating the previous explanation for emphasis.
+  say instead: Katsu-men, one size large, onegaishimasu, please.
+  (coach nudge, not spoken to the partner: Could you tell me which type of katsu-men you'd like?)
+
+Barista: Sumimasen, melon soda wa setto arimasu. Mado wa o-ō-hi ga arimasu.
+  · scene: modify, size
+  ✓ they got across
+  - Sato, mado. → Saying the item name correctly is important.  [vocabulary]
+    The learner used the English word 'Sato' instead of the Japanese 'Sato' for the item.
+  - Sato, mado. → The learner needs to use the correct particle for the item.  [grammar]
+    The particle 'wa' is used to indicate the topic of the sentence, which is not appropriate here.
+  - Sato, mado. → The learner needs to use the correct word for 'order'.  [vocabulary]
+    The word 'mado' is a type of bread, not the word for ordering.
+  say instead: Sato o onegaishimasu.
+  (coach nudge, not spoken to the partner: Could you please tell me which item you would like to order?)
+
+Barista: Sato-chotto, mado o-ō-hi. Oneya?
+  ✓ they got across
+  - Um, big size? Or "large"? → You need to use the correct word for size in Japanese, which is 'ōkii'.  [vocabulary]
+    The word 'big' is not a standard way to express size in Japanese, and 'large' is not a common term in this context.
+  - Um, big size? Or "large"? → It's better to say 'ōkii baai' for 'big size',  [grammar]
+    Adding 'baai' (バイ) clarifies that you are referring to the size of the item.
+  - Um, big size? Or "large"? → You can also use 'ōkii' followed by the item name, like 'ōkii mado',  [grammar]
+    This is a more natural way to express the size in Japanese.
+  say instead: Ōkii mado, onegaishimasu.
+  (coach nudge, not spoken to the partner: Try ordering the item with the size, like 'Ōkii mado, onegaishimasu.')
+
+Barista: Large desu ka? Ganbarimashita!
+  ✓ they got across
+  - Arigatsumikabushi! → Thank you very much!  [vocabulary]
+    The learner used a very formal and lengthy expression of gratitude, which is not typically used in a café setting.
+  - Arigatsumikabushi! → Thank you!  [vocabulary]
+    The learner used a very formal and lengthy expression of gratitude, which is not typically used in a café setting.
+  say instead: Arigato gozaimasu!
+  (coach nudge, not spoken to the partner: Could you please tell me what you would like to order next?)
+
+session: 5 turns, 12 corrections, scene not cleared in 829.7s · tokens 4798/1566
+transcript: docs/transcripts/demo-server-2026-10-04.md

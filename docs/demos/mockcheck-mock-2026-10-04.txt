@@ -1,0 +1,39 @@
+
+Barista: Ah, good morning! Welcome to Café Aoi. What would you like today?
+  · scene: greet
+  ✓ they got across
+  - sato → satoh  [pronunciation]
+    Final -s in a loanword needs the long vowel: satoo/satoh.
+  say instead: Ahara, sumisu no ogi, please.
+  (coach nudge, not spoken to the partner: You ordered fine — the barista heard you.)
+
+Barista: Ah, good morning! Welcome to Café Aoi. What would you like today?
+  ✓ they got across
+  - sato → satoh  [pronunciation]
+    Final -s in a loanword needs the long vowel: satoo/satoh.
+  say instead: Ahara, sumisu no ogi, please.
+  (coach nudge, not spoken to the partner: You ordered fine — the barista heard you.)
+
+Barista: Ah, good morning! Welcome to Café Aoi. What would you like today?
+  ✓ they got across
+  - sato → satoh  [pronunciation]
+    Final -s in a loanword needs the long vowel: satoo/satoh.
+  say instead: Ahara, sumisu no ogi, please.
+  (coach nudge, not spoken to the partner: You ordered fine — the barista heard you.)
+
+Barista: Ah, good morning! Welcome to Café Aoi. What would you like today?
+  ✓ they got across
+  - sato → satoh  [pronunciation]
+    Final -s in a loanword needs the long vowel: satoo/satoh.
+  say instead: Ahara, sumisu no ogi, please.
+  (coach nudge, not spoken to the partner: You ordered fine — the barista heard you.)
+
+Barista: Ah, good morning! Welcome to Café Aoi. What would you like today?
+  ✓ they got across
+  - sato → satoh  [pronunciation]
+    Final -s in a loanword needs the long vowel: satoo/satoh.
+  say instead: Ahara, sumisu no ogi, please.
+  (coach nudge, not spoken to the partner: You ordered fine — the barista heard you.)
+
+session: 5 turns, 5 corrections, scene not cleared in 0.0s · tokens 0/0
+transcript: docs/transcripts/mockcheck-mock-2026-10-04.md
