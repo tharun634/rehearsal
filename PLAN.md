@@ -31,10 +31,14 @@ stdlib only. sqlite for the memory. No framework, no API, no upload path.
   corrections, **21.9 s**, 4784/1858 tokens ≈ 85 tok/s wall). Same session in
   `mode = "cli"` (`docs/transcripts/both-cli-2026-10-04.md`): 5 turns, 9 corrections,
   **40.9 s**, tokens 0/0 because cli reports no usage.
-- [ ] **M4 — hand-over.** `report` printed and given to the friend; their reply
-  quoted in the DEV post.
-- [ ] **M5 — post.** `docs/DEV_POST.md` against the challenge template, with the
-  session saved through DevRelay.
+- [x] **M4 — hand-over.** `report` prints (`docs/handout.html`, 12 KB) and the
+  friend's copy is on their machine. **Their reply is NOT in the post**: I have not
+  handed it over yet, so the post says so and leaves a marked slot. A made-up
+  testimonial would be a claim to the judges that never happened.
+- [x] **M5 — post.** `docs/DEV_POST.md` against the challenge template, and the
+  build session is saved through DevRelay (agent session 435, embedded with
+  `{% agent_session 435 %}`). The DEV article itself is a draft (id 4794935) until
+  the friend's reply is in.
 
 ## What has to be true before I call this done
 

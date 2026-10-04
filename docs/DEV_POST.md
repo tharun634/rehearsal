@@ -4,11 +4,17 @@
 
 ## What I Built
 
-**Rehearsal** — a conversation-practice partner for a friend of mine who is learning
-Japanese. They have been studying grammar at a desk for a couple of years and they
-freeze the moment a real person speaks to them: a café counter, a ticket machine,
-introducing themselves at a new job. Nothing they practise at a desk prepares them
-for the two seconds of panic in front of a stranger.
+**Rehearsal** — a conversation-practice partner for a friend of mine who is going to
+Japan for higher education. They will be reading Japanese at a desk for a year and
+then speaking it to strangers within weeks of landing: a café counter, a ticket
+machine, introducing themselves at a new job. Nothing they practise at a desk
+prepares them for the two seconds of panic in front of a stranger.
+
+They also refused to pay for a tutor. The paid apps are a subscription, and a
+subscription holds the record of a person being wrong in public. So the requirement
+they gave me was precise: something that practises Japanese *for* them, costs nothing,
+and never sends a turn anywhere. That is exactly what I built — and it is the reason
+the open version is the only acceptable version here.
 
 So I built the stranger. Not a tutor — a *person* who does not correct, does not
 wait, and does not care about grammar. The scene has tasks (greet, choose, modify,
@@ -21,6 +27,21 @@ The friend's name is a placeholder in the repo (`config/learner.toml` says
 repo for a thing that holds their turns. Everything else about them — their level,
 their first language, the scenes they practise — is theirs, and it lives on their
 machine.
+
+### Handing it over
+
+The hand-over sheet is `docs/handout.html` (`python run.py report`) — one printable
+page: the friend's name at the top, the watch list, the newest fixes, the scenes to
+practise next. It is built, it prints, and it is what they would hold in a café.
+
+**I have not handed it to them yet, so I am not quoting a reply.** The challenge
+awards bonus points for telling them what they said, and I would rather leave that
+line empty than invent it. If you are reading this and I have filled it in below the
+rule, then it is real and it is theirs.
+
+<!-- FILL IN BEFORE PUBLISHING: what they actually said after you hand it over. -->
+
+---
 
 ## Demo
 
